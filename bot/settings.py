@@ -25,7 +25,7 @@ SECRET_KEY = '^-ch(=^$2ki$flt54rw(rg^tet&m3@ob*yl4-p8m0shlvmqmar'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['botvkroman-98b2ef8a.localhost.run']
+ALLOWED_HOSTS = ['botvkroma-492fcdeb.localhost.run']
 
 
 # Application definition
