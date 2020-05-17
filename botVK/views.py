@@ -5,6 +5,7 @@ import json
 import vk
 import random
 import sqlite3
+import database
 ##py manage.py runserver
 ##ssh -R 80:127.0.0.1:8000 botvkroman@ssh.localhost.run
 
@@ -20,11 +21,13 @@ def confirmation(request):
 @csrf_exempt
 def bot(request):
     body=json.loads(request.body)
-    def SendAnswer(userID, msg):
-        vkAPI.messages.send(user_id=userID, message=msg, random_id=random.randint(1, 99999999999999), v=5.103)
+    
+    def SendAnswer(userID, msg, keyboard = ""):
+        vkAPI.messages.send(user_id=userID, message=msg, keyboard=keyboard, random_id=random.randint(1, 99999999999999), v=5.103)
+
     print(body)
     if body == { "type": "confirmation", "group_id": 194135917 }:
-        return HttpResponse('29c59b15')
+        return HttpResponse('86ec14db')
     if body["type"]=="message_new":
         msg=body ["object"]["message"]["text"]
         userID=body["object"]["message"]["from_id"]
@@ -32,13 +35,74 @@ def bot(request):
         name_user=name_us[0]["first_name"]
         tag_rep=(msg).split(" ", maxsplit=1)
         answ=""
+        gpid = -1
+        gpname =""
+        if "payload" in body["object"]["message"]:
+            payload = body["object"]["message"]["payload"]
+        def keyboardStart(request, userID):
+	        answ = "Привет! Выбери свою группу пользователя!"
+	        keyboard = json.dumps({
+		    "one_time": True,
+
+		    "buttons":[
+                [{
+				    "action": {
+					    "type":"text",
+					    "label":"Администратор",
+					    "payload": """{"command":"admin"}"""
+				    },
+				        "color":"negative"
+			        }
+		        ],
+                [{
+				    "action": {
+					    "type":"text",
+					    "label":"Программист",
+					    "payload": """{"command":"program"}"""
+				    },
+				        "color":"positive"
+			        }
+		        ],
+                [{
+				    "action": {
+					    "type":"text",
+					    "label":"Труп",
+					    "payload": """{"command":"person"}"""
+				    },
+				        "color":"primary"
+			        }
+		        ]
+                ]
+	        })
+	        SendAnswer(userID, answ, keyboard)
         if msg=="Привет":
             name_us = vkAPI.users.get(user_ids = userID, v=5.103)
             answ = "Привет "+ name_user +", я Твой самый лучший друг, я сниму с тебя скальп 💀 💀 💀 :)"
             SendAnswer(userID, answ)
+        elif msg == "/whoAmI":
+            answ = """Вы относитесь к группе {0}""".format(database.getGroup(str(userID))[0]["GroupName"])
+            SendAnswer(userID, answ)
         elif tag_rep[0]=="/say":
-            msg=tag_rep[1]
-            vkAPI.messages.send(user_id=userID, message=msg, random_id=random.randint(1, 99999999999999), v=5.103)
+            answ=tag_rep[1]
+            SendAnswer(userID, answ)
+        elif payload == """{"command":"start"}""":
+            keyboardStart(request, userID)
+        elif payload == """{"command":"admin"}""":
+            gpid = str(1)
+            gpname = "Администратор"
+            database.insert("user", ["id, groupId"], [str(userID), gpid])
+            answ= "Вы были добавлены в группу {0}".format(gpname)
+            SendAnswer(userID, answ)
+        elif payload == """{"command":"program"}""":
+            gpid = str(2)
+            gpname = "Программист"
+            database.insert("user", ["id, groupId"], [str(userID), gpid])
+            answ= "Вы были добавлены в группу {0}".format(gpname)
+        elif payload == """{"command":"person"}""":
+            gpid = str(3)
+            gpname = "Труп"
+            database.insert("user", ["id, groupId"], [str(userID), gpid])
+            answ= "Вы были добавлены в группу {0}".format(gpname)
         else:
             conn = sqlite3.connect("db.sqlite") 
             cur = conn.cursor()
@@ -50,6 +114,7 @@ def bot(request):
                 if answer[i][1]==msg:
                     answ=answer[i][2]
                     SendAnswer(userID, answ)
+
 
         # elif body ["object"]["message"]["text"]=="Какой сейчас час?":
         #     msg = "Час убивать!!!"
@@ -94,7 +159,21 @@ def bot(request):
     
     return HttpResponse("ok")        
 
+lg={
+    "success": False,
+    "groups":[]
 
-
+}
+def login(request):
+    global lg
+    tgl=[]
+    for i in database.get("Groups", ["GroupName"]):
+        tgl.append(i["GroupName"])
+    lg["groups"] = tgl   
+    print(request.GET)
+    if "admin" == request.GET.get("login") and "0000" == request.GET.get("password"):
+        lg["success"]=True
+    print(lg)
+    return render(request, "login.html", lg)
 
 

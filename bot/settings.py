@@ -25,7 +25,7 @@ SECRET_KEY = '^-ch(=^$2ki$flt54rw(rg^tet&m3@ob*yl4-p8m0shlvmqmar'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['botvkroma-492fcdeb.localhost.run']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -54,7 +54,7 @@ ROOT_URLCONF = 'bot.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ["./botVK/Templates/"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
