@@ -84,24 +84,31 @@ def insert(table_name, cols, data):
     db.commit()
     db.close()
 
-def getGroup(userID = None):
+def getGroup(userID = None, groupID = None):
     db = sqlite3.connect('db.sqlite')
     cur = db.cursor()
 
     query = ""
 
-    if userID == None:
+    if userID == None and groupID == None:
         query = """
             SELECT * FROM Groups
-            JOIN user
-            ON Groups.id = user.groupId
+            JOIN User
+            ON Groups.id = User.groupId
         """
+    elif groupID:
+        query = """
+            SELECT * FROM Groups
+            INNER JOIN User
+            ON Groups.id = User.groupId
+            WHERE User.groupId == '{0}'
+        """.format(groupID) 
     else:
         query = """
             SELECT * FROM Groups
-            INNER JOIN user
-            ON Groups.id = user.groupId
-            WHERE user.id == '{0}'
+            INNER JOIN User
+            ON Groups.id = User.groupId
+            WHERE User.id == '{0}'
         """.format(userID) 
 
     cur.execute(query)

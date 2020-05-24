@@ -16,7 +16,7 @@ vkAPI=vk.API(session)
 ## Подтверждение сервера
 @csrf_exempt
 def confirmation(request):
-    return HttpResponse('29c59b15')
+    return HttpResponse('5ba3cbbe')
 
 @csrf_exempt
 def bot(request):
@@ -27,7 +27,7 @@ def bot(request):
 
     print(body)
     if body == { "type": "confirmation", "group_id": 194135917 }:
-        return HttpResponse('86ec14db')
+        return HttpResponse('5ba3cbbe')
     if body["type"]=="message_new":
         msg=body ["object"]["message"]["text"]
         userID=body["object"]["message"]["from_id"]
@@ -82,6 +82,11 @@ def bot(request):
         elif msg == "/whoAmI":
             answ = """Вы относитесь к группе {0}""".format(database.getGroup(str(userID))[0]["GroupName"])
             SendAnswer(userID, answ)
+        elif msg=="/changeMeNow":
+            database.deleteUser(userID)
+            keyboardStart(request, userID)
+            return 1
+
         elif tag_rep[0]=="/say":
             answ=tag_rep[1]
             SendAnswer(userID, answ)
@@ -161,19 +166,30 @@ def bot(request):
 
 lg={
     "success": False,
-    "groups":[]
+    "groups":database.get("Groups", )
 
 }
+
+def SendAnswer(userID, msg, keyboard = ""):
+        vkAPI.messages.send(user_id=userID, message=msg, keyboard=keyboard, random_id=random.randint(1, 99999999999999), v=5.103)
+
+@csrf_exempt
 def login(request):
     global lg
-    tgl=[]
-    for i in database.get("Groups", ["GroupName"]):
-        tgl.append(i["GroupName"])
-    lg["groups"] = tgl   
-    print(request.GET)
-    if "admin" == request.GET.get("login") and "0000" == request.GET.get("password"):
-        lg["success"]=True
     print(lg)
+
+
+    if request.method == "POST":
+        print(request.POST)
+        if request.POST.get("login") == "admin" and request.POST.get("password") == "0000":
+            lg["success"] = True
+        
+        elif (request.POST.get("message") and request.POST.get("group")) != None:
+            for user in database.getGroup(groupID = request.POST.get("group")):
+                SendAnswer(user["id"], request.POST.get("message"))
+        
+
+
     return render(request, "login.html", lg)
 
 

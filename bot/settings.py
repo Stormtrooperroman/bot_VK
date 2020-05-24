@@ -25,7 +25,7 @@ SECRET_KEY = '^-ch(=^$2ki$flt54rw(rg^tet&m3@ob*yl4-p8m0shlvmqmar'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'relego.serveo.net']
 
 
 # Application definition
